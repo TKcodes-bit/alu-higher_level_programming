@@ -2,22 +2,25 @@
 
 # Check if PYFILE is set
 if [ -z "$PYFILE" ]; then
-    echo "PYFILE environment variable is not set."
+    echo "PYFILE environment variable is not set." >&2
     exit 1
 fi
 
-# Extract the filename (without path) for output naming
-PYFILE_BASENAME=$(basename "$PYFILE")
-
-# Print the "Compiling ..." message (like in the example)
-echo "Compiling $PYFILE_BASENAME ..."
-
-# Compile to bytecode
+# Run the compiler and check for errors
 python3 -m py_compile "$PYFILE"
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
-# Move the generated .pyc file to the current directory with correct name
-mv __pycache__/"${PYFILE_BASENAME}"*.pyc "${PYFILE_BASENAME}c"
+# Extract the compiled file name from __pycache__
+basefile=$(basename "$PYFILE" .py)
+compiled_file="__pycache__/${basefile}.cpython-"*".pyc"
 
-# Optional: Cleanup empty __pycache__
-rmdir __pycache__ 2>/dev/null
+# Move the compiled file to current directory with desired name
+mv $compiled_file "${PYFILE}c" 2>/dev/null
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
+exit 0
 
