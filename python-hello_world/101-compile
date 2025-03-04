@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Check if PYFILE is set
+if [ -z "$PYFILE" ]; then
+    echo "PYFILE environment variable is not set."
+    exit 1
+fi
+
+# Compile the Python file to bytecode (.pyc)
+python3 -m py_compile "$PYFILE"
+
+# Locate the generated .pyc file (Python stores it in __pycache__)
+PYCFILE=$(basename "$PYFILE")
+PYCFILE="__pycache__/${PYCFILE}c"
+
+# Move the compiled file to current directory with correct name
+mv __pycache__/*.pyc "./$PYCFILE"
+
+# Optional: Clean up the empty __pycache__ directory
+rmdir __pycache__ 2>/dev/null
+
